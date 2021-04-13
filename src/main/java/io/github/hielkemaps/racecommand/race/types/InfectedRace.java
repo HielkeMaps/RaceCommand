@@ -23,6 +23,7 @@ public class InfectedRace extends Race {
 
     private RacePlayer firstInfected = null;
     private int infectedDelay = 30;
+    private boolean randomFirstInfected = true;
 
     private BukkitTask freezeTimer = null;
     private BukkitTask stopFreezeTask = null;
@@ -53,7 +54,7 @@ public class InfectedRace extends Race {
             }
         }, 60);
 
-        sendMessage(Main.PREFIX + "stopped race");
+        sendMessage(Main.PREFIX + "Stopped race");
     }
 
     public RacePlayer getFirstInfected() {
@@ -62,13 +63,14 @@ public class InfectedRace extends Race {
 
     public void setFirstInfected(RacePlayer player) {
         firstInfected = player;
+        randomFirstInfected = false;
     }
 
     @Override
     public void onCountdownFinish() {
 
         //set first infected
-        if (firstInfected == null || !firstInfected.isOnline()) {
+        if (firstInfected == null || !firstInfected.isOnline() || randomFirstInfected) {
             firstInfected = Util.getRandomItem(getOnlinePlayers());
         }
         firstInfected.setInfected(true);
