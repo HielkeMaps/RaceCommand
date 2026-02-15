@@ -41,7 +41,7 @@ public class BlindAbility extends Ability {
     void onActiveTick() {
         for (Player p : affectedPlayers) {
             if (p != null) {
-                p.getWorld().spawnParticle(Particle.SMOKE_LARGE, p.getLocation(), 5, 0.25, 0.5, 0.25, 0.001);
+                p.getWorld().spawnParticle(Particle.LARGE_SMOKE, p.getLocation(), 5, 0.25, 0.5, 0.25, 0.001);
             }
         }
     }
@@ -61,7 +61,7 @@ public class BlindAbility extends Ability {
 
                 if (abilityPlayer.getPlayer().getLocation().distanceSquared(mcPlayer.getLocation()) < 100) {
                     mcPlayer.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, duration + 20, 1, true, true, true));
-                    mcPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, duration + 20, 1, true, true, true));
+                    mcPlayer.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, duration + 20, 1, true, true, true));
                     mcPlayer.playSound(mcPlayer.getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 0f);
                     affectedPlayers.add(mcPlayer);
                 }

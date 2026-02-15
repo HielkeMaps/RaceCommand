@@ -95,7 +95,7 @@ public class Commands {
         //INVITE
         arguments = new ArrayList<>();
         arguments.add(new LiteralArgument("invite").withRequirement(playerInRace.and(playerisOP.or(playerIsRaceOwner))));
-        arguments.add(new PlayerArgument("player").withRequirement(sender -> !sender.isOp()).replaceSuggestions(ArgumentSuggestions.strings(info -> {
+        arguments.add(new EntitySelectorArgument.OnePlayer("player").withRequirement(sender -> !sender.isOp()).replaceSuggestions(ArgumentSuggestions.strings(info -> {
             Collection<? extends Player> players = Bukkit.getOnlinePlayers();
             List<String> names = new ArrayList<>();
 
