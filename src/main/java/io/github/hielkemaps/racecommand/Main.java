@@ -23,7 +23,6 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class Main extends JavaPlugin implements PluginMessageListener {
 
@@ -121,14 +120,17 @@ public class Main extends JavaPlugin implements PluginMessageListener {
         LocalTime startTime = LocalTime.parse(info[0]);
         LocalTime currentTime = LocalTime.now(ZoneOffset.UTC);
         
-        long timeToStart = ChronoUnit.NANOS.between(currentTime, startTime);
-        int seconds = (int) TimeUnit.NANOSECONDS.toSeconds(timeToStart);
-        long remainingNanos = timeToStart - TimeUnit.SECONDS.toNanos(seconds);
+        long timeToStart = ChronoUnit.MILLIS.between(currentTime, startTime);
 
         //Don't create race created for the past, don't.
         if (timeToStart < 0) {
             return;
         }
+
+        // Match the proxy's tab countdown, which rounds up: with 599.4s left it shows 10:00, so we show
+        // 10:00 too and tick to 9:59 after 0.4s. From then on both count in lockstep to the same start moment.
+        int seconds = (int) Math.max(1, (timeToStart + 999) / 1000);
+        long firstTickDelayMillis = timeToStart - (seconds - 1) * 1000L;
 
         String type = info[1];
         int first = Integer.parseInt(info[2]);
@@ -147,7 +149,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
         race.setPrizes(first, second, third, fourth);
 
         race.setCountDown(seconds);
-        race.startCountdown(remainingNanos);
+        race.startCountdown(firstTickDelayMillis);
 
         race.setBroadcast(true);
         RaceManager.addRace(race);

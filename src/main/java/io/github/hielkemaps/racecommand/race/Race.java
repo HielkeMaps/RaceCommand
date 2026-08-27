@@ -88,9 +88,15 @@ public abstract class Race {
         setIsPublic(true);
     }
 
-    public void startCountdown(long delay) {
+    /**
+     * @param firstTickDelayMillis time until the countdown drops from {@code countDown} to {@code countDown - 1};
+     *                             0 means a full second. Lets an event race line up with the proxy's tab timer.
+     */
+    public void startCountdown(long firstTickDelayMillis) {
         place = 1;
         isStarting = true;
+        if (firstTickDelayMillis <= 0 || firstTickDelayMillis > 1000) firstTickDelayMillis = 1000;
+        long firstTickDelayTicks = Math.max(1, Math.round(firstTickDelayMillis / 50.0));
 
         //Teleport to start
         if (countDown < 10) {
@@ -101,12 +107,14 @@ public abstract class Race {
             }
         }
 
-        //Start countdown
+        //Start countdown: show the first value now, then tick once per second from the first boundary
         currentCountdown = new AtomicInteger(countDown);
-        countDownTask = Bukkit.getScheduler().runTaskTimer(Main.getInstance(), this::countdown, 0, 20);
+        countdown();
+        countDownTask = Bukkit.getScheduler().runTaskTimer(Main.getInstance(), this::countdown, firstTickDelayTicks, 20);
 
         //Start race task
-        countDownStopTask = Bukkit.getScheduler().runTaskLater(Main.getInstance(), this::start, 20L * countDown);
+        countDownStopTask = Bukkit.getScheduler().runTaskLater(Main.getInstance(), this::start,
+                firstTickDelayTicks + 20L * (countDown - 1));
 
         updateRequirements();
     }
