@@ -29,6 +29,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
     private static Plugin instance;
 
     public static String startFunction;
+    public static float hideDistance;
 
     public Main() {
         instance = this;
@@ -46,6 +47,7 @@ public class Main extends JavaPlugin implements PluginMessageListener {
         saveDefaultConfig();
         FileConfiguration config = getConfig();
         startFunction = config.getString("start-function");
+        hideDistance = config.getLong("hide-distance");
 
         //Register commands
         new Commands();

@@ -65,6 +65,7 @@ public abstract class Race {
 
     public Race(CommandSender sender) {
         if (sender instanceof Player player) {
+        	
             this.name = sender.getName();
             this.owner = player.getUniqueId();
 
@@ -198,6 +199,11 @@ public abstract class Race {
             Player player = racePlayer.getPlayer();
             if (player == null) continue;
 
+        	// Set nearby players invisible
+        	if (type.equals("normal")) {
+        		updateNearbyVisibility(player);
+        	}
+            
             //No spectators in race
             if (player.getGameMode() == GameMode.SPECTATOR) {
                 player.setGameMode(GameMode.ADVENTURE);
@@ -212,7 +218,7 @@ public abstract class Race {
             }
         }
     }
-
+    
     /**
      * Called when a player has finished
      *
@@ -335,6 +341,15 @@ public abstract class Race {
 
     public void removePlayerSilent(UUID uuid) {
         RacePlayer racePlayer = getRacePlayer(uuid);
+        
+        if (racePlayer == null) return;
+
+        Player player = racePlayer.getPlayer();
+
+        if (player != null) {
+            restorePlayerVisibility(player);
+        }
+        
         onPlayerLeave(racePlayer);
         players.remove(racePlayer);
 
@@ -349,10 +364,12 @@ public abstract class Race {
             PlayerManager.getPlayer(owner).updateRequirements();
         }
     }
-
+    
     protected void disband() {
         cancelTasks();
 
+        restoreAllPlayerVisibility();
+        
         //get race off public visibility
         setIsPublic(false);
 
@@ -377,6 +394,65 @@ public abstract class Race {
         }
     }
 
+    private void updateNearbyVisibility(Player player) {
+
+        for (RacePlayer otherRacePlayer : players) {
+
+            if (otherRacePlayer.isFinished()) continue;
+
+            Player other = otherRacePlayer.getPlayer();
+
+            if (other == null || other.equals(player)) continue;
+
+            // Only compare players in the same world
+            if (!player.getWorld().equals(other.getWorld())) {
+                player.showPlayer(Main.getInstance(), other);
+                continue;
+            }
+
+            double distanceSquared = player.getLocation()
+                    .distanceSquared(other.getLocation());
+
+            if (distanceSquared <= Main.hideDistance * Main.hideDistance) {
+                // Hide the other racer from this player
+                player.hidePlayer(Main.getInstance(), other);
+                player.listPlayer(other);
+            } else {
+                // Make them visible again
+                player.showPlayer(Main.getInstance(), other);
+            }
+        }
+    }
+    
+    private void restorePlayerVisibility(Player player) {
+
+        for (RacePlayer otherRacePlayer : players) {
+            Player other = otherRacePlayer.getPlayer();
+
+            if (other == null || other.equals(player)) continue;
+
+            player.showPlayer(Main.getInstance(), other);
+            other.showPlayer(Main.getInstance(), player);
+        }
+    }
+    
+    private void restoreAllPlayerVisibility() {
+        for (RacePlayer racePlayer : players) {
+
+            Player player = racePlayer.getPlayer();
+            if (player == null) continue;
+
+            for (RacePlayer otherRacePlayer : players) {
+
+                Player other = otherRacePlayer.getPlayer();
+
+                if (other == null || other.equals(player)) continue;
+
+                player.showPlayer(Main.getInstance(), other);
+            }
+        }
+    }
+    
     private void cancelTasks() {
         if (countDownTask != null) countDownTask.cancel();
         if (countDownStopTask != null) countDownStopTask.cancel();

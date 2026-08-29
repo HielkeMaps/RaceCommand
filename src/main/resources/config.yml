@@ -1,2 +1,5 @@
 #function run when race starts
 start-function: ""
+
+#distance players are invisible to eachother
+hide-distance: 2.5
